@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600&family=Orbitron:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+/* ============= FOMS PREMIUM WHITE & BLACK THEME ============= */
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
+
+  /* Brand Colors - Monochrome */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray-light: #f4f4f5;
+  --color-gray-medium: #e4e4e7;
+  --color-gray-dark: #27272a;
+
+  /* Functional Colors */
+  --color-error: #dc2626;
+
+  /* Backgrounds */
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f9f9f9;
+
+  /* Text */
+  --color-text-primary: #000000;
+  --color-text-secondary: #52525b;
+  --color-text-muted: #a1a1aa;
+
+  /* Borders */
+  --color-border: #e4e4e7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: light;
+  scroll-behavior: smooth;
+  --font-inter: 'Inter', sans-serif;
+  --font-poppins: 'Poppins', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+}
+
+/* ============= PREMIUM BUTTONS ============= */
+.btn-primary {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  padding: 1rem 2.5rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 0;
+  border: 1px solid var(--color-black);
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  color: var(--color-black);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-black);
+  padding: 1rem 2.5rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-black);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border-radius: 0;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+input, select, textarea {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border);
+  color: var(--color-black);
+  padding: 0.75rem 1rem;
+  border-radius: 0;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-black);
+  ring: 1px solid var(--color-black);
+}
+
+.container {
+  max-width: 1400px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
