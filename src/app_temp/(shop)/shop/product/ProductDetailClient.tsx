@@ -1,18 +1,14 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { featuredProducts } from "@/data/mockData";
 import { useCartStore } from "@/store/useCartStore";
 import toast from "react-hot-toast";
 import { Star, Truck, ShieldCheck, Heart, Minus, Plus, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
-import { notFound } from "next/navigation";
 import { rtdb } from "@/firebase/config";
 import { ref, get, child } from "firebase/database";
 
 export default function ProductDetailClient() {
-    const searchParams = useSearchParams();
+    const [searchParams] = useSearchParams();
     const id = searchParams.get("id");
 
     const [quantity, setQuantity] = useState(1);
@@ -20,7 +16,7 @@ export default function ProductDetailClient() {
     const [product, setProduct] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const addToCart = useCartStore((state) => state.addToCart);
-    const router = useRouter();
+    const navigate = useNavigate();
 
     // Fetch product from Firebase or fallback to mock data
     useEffect(() => {
@@ -94,7 +90,20 @@ export default function ProductDetailClient() {
         );
     }
 
-    if (!id || !product) return notFound();
+    if (!id || !product) {
+        return (
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+                <h1 className="text-2xl font-bold text-black mb-4">Product Not Found</h1>
+                <p className="text-gray-500 mb-6">The product you're looking for doesn't exist.</p>
+                <button
+                    onClick={() => navigate("/shop")}
+                    className="px-6 py-3 bg-black text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-gray-900 transition-all"
+                >
+                    Back to Shop
+                </button>
+            </div>
+        );
+    }
 
     const images = product.images || [product.image];
 
@@ -117,7 +126,7 @@ export default function ProductDetailClient() {
             image: images[0],
             quantity: quantity,
         });
-        router.push("/checkout");
+        navigate("/checkout");
     };
 
     const nextImage = () => {
@@ -136,13 +145,10 @@ export default function ProductDetailClient() {
                     <div className="space-y-4">
                         {/* Main Image */}
                         <div className="relative aspect-square overflow-hidden bg-gray-100 group">
-                            <Image
+                            <img
                                 src={images[selectedImage]}
                                 alt={product.name}
-                                fill
-                                className="object-cover"
-                                priority
-                                unoptimized
+                                className="absolute inset-0 w-full h-full object-cover"
                             />
 
                             {/* Navigation Arrows */}
@@ -176,12 +182,10 @@ export default function ProductDetailClient() {
                                             : 'opacity-50 hover:opacity-100'
                                             }`}
                                     >
-                                        <Image
+                                        <img
                                             src={img}
                                             alt={`${product.name} - ${idx + 1}`}
-                                            fill
-                                            className="object-cover"
-                                            unoptimized
+                                            className="absolute inset-0 w-full h-full object-cover"
                                         />
                                     </button>
                                 ))}

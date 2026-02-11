@@ -193,3 +193,54 @@ export const useBrandStory = () => {
 
     return { story, loading, error };
 };
+
+// ============================================
+// CATEGORY TABS HOOK
+// ============================================
+export const useCategoryTabs = () => {
+    const [items, setItems] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const itemsRef = ref(rtdb, 'homeContent/categoryTabs');
+
+        const unsubscribe = onValue(
+            itemsRef,
+            (snapshot) => {
+                try {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        const itemsArray = Object.entries(data).map(([id, item]: [string, any]) => ({
+                            id,
+                            ...item
+                        }));
+                        setItems(itemsArray);
+                    } else {
+                        setItems([]);
+                    }
+                    setError(null);
+                } catch (err) {
+                    setError('Failed to load category tabs');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            },
+            (err) => {
+                setError('Failed to load category tabs');
+                setLoading(false);
+                console.error(err);
+            }
+        );
+
+        return () => off(itemsRef, 'value', unsubscribe);
+    }, []);
+
+    // Helper to group items by tab name
+    const getItemsByTab = (tabName: string) => {
+        return items.filter(item => item.group === tabName);
+    };
+
+    return { items, getItemsByTab, loading, error };
+};

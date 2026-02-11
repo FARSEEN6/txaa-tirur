@@ -2,8 +2,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Plus, Package, ShoppingCart, Users, ArrowRight, Settings, Image as ImageIcon } from "lucide-react";
+import { Plus, Package, ShoppingCart, Users, ArrowRight, Image as ImageIcon, Car } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
+import { ref, onValue } from "firebase/database";
+import { rtdb } from "@/firebase/config";
+
+interface Order {
+    id: string;
+    orderId: string;
+    customerName: string;
+    total: number;
+    status: string;
+    createdAt: string;
+}
 
 export default function AdminDashboard() {
     const { user, profile, loading: authLoading } = useAuthStore();
@@ -14,6 +25,8 @@ export default function AdminDashboard() {
         users: 0,
         revenue: 0
     });
+    const [recentOrders, setRecentOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!authLoading && (!user || (profile?.role !== 'admin' && profile?.role !== 'superadmin'))) {
@@ -22,13 +35,61 @@ export default function AdminDashboard() {
     }, [user, profile, authLoading, navigate]);
 
     useEffect(() => {
-        // Mock stats for now - connect to real DB later
-        setStats({
-            products: 12,
-            orders: 45,
-            users: 120,
-            revenue: 154000
+        // Fetch real-time data from Firebase
+        const productsRef = ref(rtdb, "products");
+        const ordersRef = ref(rtdb, "orders");
+        const usersRef = ref(rtdb, "users");
+
+        const unsubscribeProducts = onValue(productsRef, (snapshot) => {
+            const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+            setStats(prev => ({ ...prev, products: count }));
         });
+
+        const unsubscribeOrders = onValue(ordersRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const ordersArray = Object.keys(data).map(key => ({
+                    id: key,
+                    orderId: data[key].orderId || `ORD-${key.slice(-6).toUpperCase()}`,
+                    customerName: data[key].customerName || "Unknown",
+                    total: data[key].total || 0,
+                    status: data[key].status || "pending",
+                    createdAt: data[key].createdAt || new Date().toISOString(),
+                }));
+
+                // Calculate stats
+                const activeOrders = ordersArray.filter(o => o.status !== 'cancelled' && o.status !== 'delivered').length;
+                const totalRevenue = ordersArray.reduce((acc, order) => acc + order.total, 0);
+
+                // Sort by date and get recent 5
+                const sorted = ordersArray.sort((a, b) =>
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                );
+                setRecentOrders(sorted.slice(0, 5));
+
+                setStats(prev => ({
+                    ...prev,
+                    orders: activeOrders,
+                    revenue: totalRevenue
+                }));
+            } else {
+                setStats(prev => ({ ...prev, orders: 0, revenue: 0 }));
+                setRecentOrders([]);
+            }
+        });
+
+        const unsubscribeUsers = onValue(usersRef, (snapshot) => {
+            const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+            setStats(prev => ({ ...prev, users: count }));
+        });
+
+        setLoading(false);
+
+        return () => {
+            unsubscribeProducts();
+            unsubscribeOrders();
+            unsubscribeUsers();
+        };
     }, []);
 
     if (authLoading || !user || (profile?.role !== 'admin' && profile?.role !== 'superadmin')) {
@@ -43,6 +104,24 @@ export default function AdminDashboard() {
         { label: "Products", value: stats.products, icon: Package, color: "text-black" },
         { label: "Customers", value: stats.users, icon: Users, color: "text-black" },
     ];
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "delivered": return "bg-black text-white";
+            case "shipped": return "bg-gray-800 text-white";
+            case "processing": return "bg-gray-600 text-white";
+            case "cancelled": return "bg-gray-300 text-gray-600";
+            default: return "bg-gray-100 text-gray-600";
+        }
+    };
 
     return (
         <AdminLayout>
@@ -84,10 +163,45 @@ export default function AdminDashboard() {
                             <h2 className="text-xl font-bold uppercase tracking-widest text-black font-heading">Recent Orders</h2>
                             <Link to="/admin/orders" className="text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-black transition-colors">View All</Link>
                         </div>
-                        {/* Empty State / Placeholder Table */}
-                        <div className="bg-gray-50 p-16 text-center border border-dashed border-gray-200">
-                            <p className="text-gray-400 text-sm tracking-wide uppercase">No recent orders found</p>
-                        </div>
+
+                        {loading ? (
+                            <div className="bg-gray-50 p-16 text-center border border-dashed border-gray-200">
+                                <p className="text-gray-400 text-sm tracking-wide uppercase">Loading orders...</p>
+                            </div>
+                        ) : recentOrders.length === 0 ? (
+                            <div className="bg-gray-50 p-16 text-center border border-dashed border-gray-200">
+                                <p className="text-gray-400 text-sm tracking-wide uppercase">No recent orders found</p>
+                            </div>
+                        ) : (
+                            <div className="bg-white border border-gray-100 overflow-hidden">
+                                <table className="w-full">
+                                    <thead className="bg-gray-50 border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Order ID</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Customer</th>
+                                            <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">Date</th>
+                                            <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Total</th>
+                                            <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-wider text-gray-500">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {recentOrders.map((order) => (
+                                            <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 text-sm font-mono font-bold text-black">{order.orderId}</td>
+                                                <td className="px-6 py-4 text-sm text-gray-600">{order.customerName}</td>
+                                                <td className="px-6 py-4 text-xs text-gray-400 uppercase">{formatDate(order.createdAt)}</td>
+                                                <td className="px-6 py-4 text-sm font-bold text-black text-right">₹{order.total.toLocaleString('en-IN')}</td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className={`inline-block px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${getStatusColor(order.status)}`}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
 
                     <div>
@@ -100,6 +214,13 @@ export default function AdminDashboard() {
                                 </div>
                                 <ArrowRight size={16} className="text-gray-300 group-hover:text-black transition-colors" />
                             </Link>
+                            <Link to="/admin/models" className="flex items-center justify-between p-6 border border-gray-100 hover:border-black transition-all group bg-white">
+                                <div className="flex items-center gap-4">
+                                    <Car size={20} className="text-gray-300 group-hover:text-black transition-colors" />
+                                    <span className="text-sm font-bold text-gray-500 group-hover:text-black uppercase tracking-wider transition-colors">Manage Car Models</span>
+                                </div>
+                                <ArrowRight size={16} className="text-gray-300 group-hover:text-black transition-colors" />
+                            </Link>
                             <Link to="/admin/products" className="flex items-center justify-between p-6 border border-gray-100 hover:border-black transition-all group bg-white">
                                 <div className="flex items-center gap-4">
                                     <Package size={20} className="text-gray-300 group-hover:text-black transition-colors" />
@@ -107,17 +228,17 @@ export default function AdminDashboard() {
                                 </div>
                                 <ArrowRight size={16} className="text-gray-300 group-hover:text-black transition-colors" />
                             </Link>
-                            <Link to="/admin/media" className="flex items-center justify-between p-6 border border-gray-100 hover:border-black transition-all group bg-white">
+                            <Link to="/admin/photos" className="flex items-center justify-between p-6 border border-gray-100 hover:border-black transition-all group bg-white">
                                 <div className="flex items-center gap-4">
                                     <ImageIcon size={20} className="text-gray-300 group-hover:text-black transition-colors" />
-                                    <span className="text-sm font-bold text-gray-500 group-hover:text-black uppercase tracking-wider transition-colors">Media Library</span>
+                                    <span className="text-sm font-bold text-gray-500 group-hover:text-black uppercase tracking-wider transition-colors">Photo Gallery</span>
                                 </div>
                                 <ArrowRight size={16} className="text-gray-300 group-hover:text-black transition-colors" />
                             </Link>
-                            <Link to="/admin/settings" className="flex items-center justify-between p-6 border border-gray-100 hover:border-black transition-all group bg-white">
+                            <Link to="/admin/orders" className="flex items-center justify-between p-6 border border-gray-100 hover:border-black transition-all group bg-white">
                                 <div className="flex items-center gap-4">
-                                    <Settings size={20} className="text-gray-300 group-hover:text-black transition-colors" />
-                                    <span className="text-sm font-bold text-gray-500 group-hover:text-black uppercase tracking-wider transition-colors">Settings</span>
+                                    <ShoppingCart size={20} className="text-gray-300 group-hover:text-black transition-colors" />
+                                    <span className="text-sm font-bold text-gray-500 group-hover:text-black uppercase tracking-wider transition-colors">View Orders</span>
                                 </div>
                                 <ArrowRight size={16} className="text-gray-300 group-hover:text-black transition-colors" />
                             </Link>

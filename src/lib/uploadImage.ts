@@ -3,12 +3,13 @@
  * Uploads images to Cloudinary
  */
 
-import toast from "react-hot-toast";
+import axios from "axios";
 
 // Cloudinary Configuration
-const CLOUDINARY_CLOUD_NAME = "dg1jeldcu";
-const CLOUDINARY_UPLOAD_PRESET = "txaa-tirur";
-const CLOUDINARY_FOLDER = "foms-home";
+// Use environment variables if available, otherwise fall back to hardcoded values
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "dg1jeldcu";
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "txaa-tirur";
+const CLOUDINARY_FOLDER = import.meta.env.VITE_CLOUDINARY_FOLDER || "foms-home";
 
 export type UploadProvider = "cloudinary";
 
@@ -27,23 +28,23 @@ interface UploadResult {
 /**
  * Validate image file
  */
-export function validateImageFile(file: File): { valid: boolean; error?: string } {
+export function validateImageFile(file: File, maxSizeInMB: number = 5): { valid: boolean; error?: string } {
     // Check file type
     if (!file.type.startsWith("image/")) {
         return { valid: false, error: "File must be an image" };
     }
 
-    // Check file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    // Check file size
+    const maxSize = maxSizeInMB * 1024 * 1024;
     if (file.size > maxSize) {
-        return { valid: false, error: "Image size must be less than 5MB" };
+        return { valid: false, error: `Image size must be less than ${maxSizeInMB}MB` };
     }
 
     return { valid: true };
 }
 
 /**
- * Upload to Cloudinary
+ * Upload to Cloudinary using Axios
  */
 async function uploadToCloudinary(
     file: File,
@@ -53,41 +54,40 @@ async function uploadToCloudinary(
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    // Note: Some unsigned presets might restrict folder override. 
+    // If upload fails, check if the preset allows folder selection.
     formData.append("folder", `${CLOUDINARY_FOLDER}/${folder}`);
 
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        // Track upload progress
-        if (onProgress) {
-            xhr.upload.addEventListener("progress", (e) => {
-                if (e.lengthComputable) {
-                    const progress = (e.loaded / e.total) * 100;
-                    onProgress(progress);
-                }
-            });
-        }
-
-        xhr.addEventListener("load", () => {
-            if (xhr.status === 200) {
-                try {
-                    const data = JSON.parse(xhr.responseText);
-                    resolve(data.secure_url);
-                } catch (error) {
-                    reject(new Error("Failed to parse upload response"));
-                }
-            } else {
-                reject(new Error('Upload failed with status ' + xhr.status));
+    try {
+        const response = await axios.post(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                onUploadProgress: (progressEvent) => {
+                    if (onProgress && progressEvent.total) {
+                        const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        onProgress(progress);
+                    }
+                },
+                timeout: 30000, // 30 second timeout to prevent hanging
             }
-        });
+        );
 
-        xhr.addEventListener("error", () => {
-            reject(new Error("Network error during upload"));
-        });
-
-        xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`);
-        xhr.send(formData);
-    });
+        if (response.data && response.data.secure_url) {
+            return response.data.secure_url;
+        } else {
+            throw new Error("Invalid response from Cloudinary");
+        }
+    } catch (error: any) {
+        if (axios.isAxiosError(error)) {
+            console.error("Cloudinary Upload Error:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.error?.message || "Failed to upload image to Cloudinary");
+        }
+        throw error;
+    }
 }
 
 /**

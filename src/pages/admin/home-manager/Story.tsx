@@ -245,6 +245,149 @@ export default function BrandStoryManagerPage() {
                         </div>
                     </div>
 
+                    {/* STYLING CONTROLS */}
+                    <div className="mt-8 pt-8 border-t border-gray-100">
+                        <h3 className="text-lg font-bold uppercase mb-6">Styling & Customization</h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Text Colors */}
+                            <div className="space-y-4">
+                                <h4 className="font-bold text-sm text-gray-400 uppercase tracking-wider">Text Colors</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase tracking-wider mb-2">Heading Color</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={formData.titleColor || "#000000"}
+                                                onChange={(e) => handleChange("titleColor", e.target.value)}
+                                                className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={formData.titleColor || "#000000"}
+                                                onChange={(e) => handleChange("titleColor", e.target.value)}
+                                                className="flex-1 px-3 py-2 border border-gray-200 text-xs font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase tracking-wider mb-2">Description Color</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={formData.descriptionColor || "#4b5563"}
+                                                onChange={(e) => handleChange("descriptionColor", e.target.value)}
+                                                className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={formData.descriptionColor || "#4b5563"}
+                                                onChange={(e) => handleChange("descriptionColor", e.target.value)}
+                                                className="flex-1 px-3 py-2 border border-gray-200 text-xs font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Button Colors */}
+                            <div className="space-y-4">
+                                <h4 className="font-bold text-sm text-gray-400 uppercase tracking-wider">Button Colors</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase tracking-wider mb-2">Background</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={formData.buttonBgColor || "#ffffff"}
+                                                onChange={(e) => handleChange("buttonBgColor", e.target.value)}
+                                                className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={formData.buttonBgColor || "#ffffff"}
+                                                onChange={(e) => handleChange("buttonBgColor", e.target.value)}
+                                                className="flex-1 px-3 py-2 border border-gray-200 text-xs font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold uppercase tracking-wider mb-2">Text Color</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={formData.buttonTextColor || "#000000"}
+                                                onChange={(e) => handleChange("buttonTextColor", e.target.value)}
+                                                className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={formData.buttonTextColor || "#000000"}
+                                                onChange={(e) => handleChange("buttonTextColor", e.target.value)}
+                                                className="flex-1 px-3 py-2 border border-gray-200 text-xs font-mono"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Image Filters */}
+                        <div className="mt-8">
+                            <h4 className="font-bold text-sm text-gray-400 uppercase tracking-wider mb-4">Image Style</h4>
+                            <div className="flex flex-wrap gap-8 p-6 bg-gray-50 rounded-xl border border-gray-100">
+
+                                <label className="flex items-center gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={!!formData.grayscale}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, grayscale: e.target.checked });
+                                            setHasChanges(true);
+                                        }}
+                                        className="w-5 h-5 accent-black"
+                                    />
+                                    <span className="text-sm font-bold uppercase tracking-wider">Black & White Mode</span>
+                                </label>
+
+                                <div className="flex-1 min-w-[200px]">
+                                    <label className="block text-xs font-bold uppercase tracking-wider mb-2">
+                                        Brightness ({formData.brightness || 100}%)
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="50"
+                                        max="150"
+                                        value={formData.brightness || 100}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, brightness: parseInt(e.target.value) });
+                                            setHasChanges(true);
+                                        }}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                    />
+                                </div>
+
+                                <div className="flex-1 min-w-[200px]">
+                                    <label className="block text-xs font-bold uppercase tracking-wider mb-2">
+                                        Contrast ({formData.contrast || 100}%)
+                                    </label>
+                                    <input
+                                        type="range"
+                                        min="50"
+                                        max="150"
+                                        value={formData.contrast || 100}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, contrast: parseInt(e.target.value) });
+                                            setHasChanges(true);
+                                        }}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Actions */}
                     <div className="mt-8 flex gap-4 pt-6 border-t border-gray-100">
                         <button

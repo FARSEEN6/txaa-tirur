@@ -1,197 +1,187 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight } from "lucide-react";
-
+import { ChevronRight, ArrowRight, Play } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useHeroSlides } from "@/hooks/useHomeContent";
+import type { HeroSlide } from "@/types/home";
 
-const staticSlides = [
+// Fallback data (Monochrome)
+const STATIC_SLIDES: HeroSlide[] = [
     {
-        id: "static-1",
-        bgColor: "bg-[#FF7F50]", // Coral
-        tag: "NEW ARRIVAL",
-        title: "SUMMER",
-        subtitle: "COLLECTION",
-        discount: "30% OFF",
-        description: "Upgrade your drive with our latest premium accessories.",
-        image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?q=80&w=1000&auto=format&fit=crop", // Car lifestyle
-        ctaText: "SHOP NOW",
+        id: "slide1",
+        imageUrl: "https://images.unsplash.com/photo-1605559424843-9e4c228d948f?q=80&w=2000&auto=format&fit=crop", // Monochrome Car
+        heading: "PRECISION ENGINEERING",
+        subtitle: "ELEVATE YOUR DRIVE",
+        subtext: "Experience the pinnacle of automotive excellence with our curated collection.",
+        ctaText: "EXPLORE COLLECTION",
         ctaLink: "/shop",
-        textColor: "text-white"
+        position: "left",
+        enabled: true,
+        order: 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
     },
     {
-        id: "static-2",
-        bgColor: "bg-[#FFB347]", // Pastel Orange
-        tag: "LIMITED OFFER",
-        title: "PREMIUM",
-        subtitle: "INTERIORS",
-        discount: "FLAT 50%",
-        description: "Luxury seat covers and mats at unbeatable prices.",
-        image: "https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=1000&auto=format&fit=crop",
-        ctaText: "GRAB DEAL",
-        ctaLink: "/shop?category=Seat%20Covers",
-        textColor: "text-gray-900"
+        id: "slide2",
+        imageUrl: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2000&auto=format&fit=crop", // Dark Car
+        heading: "DEFINITIVE STYLE",
+        subtitle: "CARBON FIBER SERIES",
+        subtext: "Lightweight, durable, and unmistakably premium. Upgrade your aesthetic.",
+        ctaText: "VIEW SERIES",
+        ctaLink: "/shop?category=carbon",
+        position: "center",
+        enabled: true,
+        order: 2,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
     },
     {
-        id: "static-3",
-        bgColor: "bg-[#FF6B6B]", // Light Red
-        tag: "TRENDING",
-        title: "SPORT",
-        subtitle: "EDITION",
-        discount: "HOT DEAL",
-        description: "Transform your vehicle with our sport edition kit.",
-        image: "https://images.unsplash.com/photo-1580273916550-e323be2eb059?q=80&w=1000&auto=format&fit=crop",
-        ctaText: "EXPLORE",
-        ctaLink: "/shop",
-        textColor: "text-white"
+        id: "slide3",
+        imageUrl: "https://images.unsplash.com/photo-1503376763036-066120622c74?q=80&w=2000&auto=format&fit=crop", // Night Car
+        heading: "PERFORMANCE REDEFINED",
+        subtitle: "ADVANCED AERODYNAMICS",
+        subtext: "Optimized for speed and stability. Discover our aero components.",
+        ctaText: "DISCOVER MORE",
+        ctaLink: "/shop?category=performance",
+        position: "right",
+        enabled: true,
+        order: 3,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
     }
 ];
 
 export default function PromotionalCarousel() {
-    const { enabledSlides, loading } = useHeroSlides();
-    const [current, setCurrent] = useState(0);
+    const { slides, loading, error } = useHeroSlides();
+    const [currentSlide, setCurrentSlide] = useState(0);
+    const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
-    // Map backend data to carousel format or use static fallback
-    const slides = enabledSlides.length > 0 ? enabledSlides.map(slide => ({
-        id: slide.id,
-        bgColor: slide.bgColor || "#ffffff",
-        tag: slide.tag || "",
-        title: slide.heading,
-        subtitle: slide.subtitle || "",
-        discount: slide.discount || "",
-        description: slide.subtext,
-        image: slide.imageUrl,
-        ctaText: slide.ctaText || "Shop Now",
-        ctaLink: slide.ctaLink || "/shop",
-        textColor: slide.textColor || "text-black"
-    })) : staticSlides;
+    const activeSlides = slides.length > 0 ? slides : STATIC_SLIDES;
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrent((prev) => (prev + 1) % slides.length);
-        }, 5000);
-        return () => clearInterval(timer);
-    }, [slides.length]);
+        if (!isAutoPlaying) return;
+        const interval = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
+        }, 6000);
+        return () => clearInterval(interval);
+    }, [activeSlides.length, isAutoPlaying]);
+
+    const nextSlide = () => {
+        setCurrentSlide((prev) => (prev + 1) % activeSlides.length);
+        setIsAutoPlaying(false);
+    };
+
+    const prevSlide = () => {
+        setCurrentSlide((prev) => (prev - 1 + activeSlides.length) % activeSlides.length);
+        setIsAutoPlaying(false);
+    };
+
+    // Generate CSS filter string for image effects
+    const getImageFilter = (slide: HeroSlide) => {
+        const filters = [];
+        if (slide.grayscale) filters.push("grayscale(100%)");
+        if (slide.brightness && slide.brightness !== 100) filters.push(`brightness(${slide.brightness}%)`);
+        if (slide.contrast && slide.contrast !== 100) filters.push(`contrast(${slide.contrast}%)`);
+        if (slide.saturation && slide.saturation !== 100) filters.push(`saturate(${slide.saturation}%)`);
+        return filters.length > 0 ? filters.join(" ") : "none";
+    };
 
     return (
-        <section className="w-full bg-white py-8 md:py-12 overflow-hidden">
-            <div className="container mx-auto px-4 md:px-6">
-                <div className="relative w-full h-[500px] md:h-[600px] mx-auto overflow-hidden rounded-[2rem] shadow-2xl">
-                    <AnimatePresence initial={false} mode="wait">
-                        <motion.div
-                            key={current}
-                            initial={{ x: 1000, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -1000, opacity: 0 }}
-                            transition={{ duration: 0.8, ease: "easeInOut" }}
-                            className={`absolute inset-0 w-full h-full flex items-center ${slides[current].bgColor.startsWith('#') ? '' : slides[current].bgColor}`}
-                            style={{ backgroundColor: slides[current].bgColor.startsWith('#') ? slides[current].bgColor : undefined }}
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-2 w-full h-full">
-                                {/* Left Content */}
-                                <div className="flex flex-col justify-center px-8 md:px-16 lg:px-24 text-left z-10">
-                                    <motion.span
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                        className={`inline-block text-sm font-bold tracking-[0.3em] mb-4 ${slides[current].textColor} opacity-80`}
-                                    >
-                                        {slides[current].tag}
-                                    </motion.span>
-
-                                    <motion.h2
-                                        initial={{ opacity: 0, y: 30 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.4 }}
-                                        className={`text-6xl md:text-8xl font-black tracking-tighter leading-none mb-2 ${slides[current].textColor}`}
-                                    >
-                                        {slides[current].title}
-                                    </motion.h2>
-
-                                    <motion.h3
-                                        initial={{ opacity: 0, y: 30 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.5 }}
-                                        className={`text-4xl md:text-6xl font-bold tracking-tight mb-6 opacity-90 ${slides[current].textColor}`}
-                                    >
-                                        {slides[current].subtitle}
-                                    </motion.h3>
-
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        transition={{ delay: 0.6 }}
-                                        className="mb-8"
-                                    >
-                                        <span className={`inline-block px-6 py-2 rounded-full border-2 ${slides[current].textColor === 'text-white' ? 'border-white text-white' : 'border-gray-900 text-gray-900'} font-bold text-xl`}>
-                                            {slides[current].discount}
-                                        </span>
-                                    </motion.div>
-
-                                    <motion.p
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ delay: 0.7 }}
-                                        className={`text-lg mb-8 max-w-md ${slides[current].textColor} opacity-80`}
-                                    >
-                                        {slides[current].description}
-                                    </motion.p>
-
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.8 }}
-                                    >
-                                        <Link
-                                            to={slides[current].ctaLink}
-                                            className={`inline-flex items-center gap-2 px-8 py-4 rounded-full font-bold text-sm tracking-widest uppercase transition-transform hover:scale-105 ${slides[current].textColor === 'text-white'
-                                                ? 'bg-white text-black hover:bg-gray-100'
-                                                : 'bg-black text-white hover:bg-gray-800'
-                                                }`}
-                                        >
-                                            {slides[current].ctaText}
-                                            <ArrowRight size={18} />
-                                        </Link>
-                                    </motion.div>
-                                </div>
-
-                                {/* Right Image (Cutout effect) */}
-                                <div className="relative hidden md:block h-full">
-                                    <motion.div
-                                        initial={{ x: 100, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: 0.4, duration: 0.8 }}
-                                        className="absolute inset-0 flex items-center justify-center p-12"
-                                    >
-                                        {/* Circular/Organic shape background behind image for depth */}
-                                        <div className="absolute w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl transform translate-x-10 translate-y-10"></div>
-
-                                        <div className="relative w-full h-full max-h-[500px] max-w-[500px]">
-                                            <img
-                                                src={slides[current].image}
-                                                alt={slides[current].title}
-                                                className="absolute inset-0 w-full h-full object-cover rounded-3xl shadow-xl rotate-3 hover:rotate-0 transition-transform duration-700"
-                                            />
-                                        </div>
-                                    </motion.div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </AnimatePresence>
-
-                    {/* Navigation Dots */}
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
-                        {slides.map((_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={() => setCurrent(idx)}
-                                className={`w-3 h-3 rounded-full transition-all duration-300 ${current === idx ? "bg-white scale-125" : "bg-white/40 hover:bg-white/60"
-                                    }`}
-                            />
-                        ))}
+        <section className="relative w-full h-[85vh] min-h-[600px] overflow-hidden bg-black text-white">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={currentSlide}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.7 }}
+                    className="absolute inset-0 w-full h-full"
+                >
+                    {/* Background Image - Dynamic Filters Applied */}
+                    <div className="absolute inset-0">
+                        <img
+                            src={activeSlides[currentSlide].imageUrl}
+                            alt={activeSlides[currentSlide].heading}
+                            className="w-full h-full object-cover opacity-60"
+                            style={{ filter: getImageFilter(activeSlides[currentSlide]) }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/30" />
+                        <div className="absolute inset-0 bg-black/20" />
                     </div>
-                </div>
+
+                    {/* Content */}
+                    <div className="relative z-10 container mx-auto px-6 h-full flex flex-col justify-center">
+                        <motion.div
+                            initial={{ y: 30, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.3, duration: 0.8 }}
+                            className={`max-w-2xl ${activeSlides[currentSlide].position === "center" ? "mx-auto text-center" :
+                                activeSlides[currentSlide].position === "right" ? "ml-auto text-right" : "mr-auto text-left"
+                                }`}
+                        >
+                            <h2
+                                className="text-sm md:text-base font-bold tracking-[0.3em] uppercase mb-4"
+                                style={{ color: activeSlides[currentSlide].subtitleColor || "#d1d5db" }}
+                            >
+                                {activeSlides[currentSlide].subtitle}
+                            </h2>
+                            <h1
+                                className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter uppercase mb-6 leading-[0.9]"
+                                style={{ color: activeSlides[currentSlide].titleColor || "#ffffff" }}
+                            >
+                                {activeSlides[currentSlide].heading}
+                            </h1>
+                            <p
+                                className="text-lg md:text-xl mb-10 max-w-lg leading-relaxed"
+                                style={{ color: activeSlides[currentSlide].subtitleColor || "#d1d5db" }}
+                            >
+                                {activeSlides[currentSlide].subtext}
+                            </p>
+
+                            <Link
+                                to={activeSlides[currentSlide].ctaLink}
+                                className="inline-flex items-center gap-3 px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:opacity-90 transition-all group"
+                                style={{
+                                    backgroundColor: activeSlides[currentSlide].buttonBgColor || "#ffffff",
+                                    color: activeSlides[currentSlide].buttonTextColor || "#000000"
+                                }}
+                            >
+                                {activeSlides[currentSlide].ctaText}
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </motion.div>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
+
+            {/* Navigation Dots */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-4 z-20">
+                {activeSlides.map((_, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => {
+                            setCurrentSlide(idx);
+                            setIsAutoPlaying(false);
+                        }}
+                        className={`w-12 h-1 rounded-full transition-all duration-300 ${currentSlide === idx ? "bg-white" : "bg-white/20 hover:bg-white/40"
+                            }`}
+                    />
+                ))}
             </div>
+
+            {/* Arrows */}
+            <button
+                onClick={prevSlide}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all hidden md:flex"
+            >
+                <ChevronRight size={32} className="rotate-180" />
+            </button>
+            <button
+                onClick={nextSlide}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all hidden md:flex"
+            >
+                <ChevronRight size={32} />
+            </button>
         </section>
     );
 }

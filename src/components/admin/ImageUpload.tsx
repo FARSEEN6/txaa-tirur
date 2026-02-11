@@ -100,7 +100,7 @@ export default function ImageUpload({ onImagesChange, maxImages = 5, existingIma
                 <div className="flex flex-col items-center justify-center py-4">
                     {uploading ? (
                         <>
-                            <Loader2 className="animate-spin text-[#d4a017] mb-2" size={36} />
+                            <Loader2 className="animate-spin text-black mb-2" size={36} />
                             <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
                                 Uploading to Cloud...
                             </p>
@@ -129,7 +129,7 @@ export default function ImageUpload({ onImagesChange, maxImages = 5, existingIma
 
             {/* Error Message */}
             {error && (
-                <div className="flex items-center gap-2 text-red-500 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                <div className="flex items-center gap-2 text-black text-sm bg-gray-50 border border-black p-3 rounded-lg">
                     <AlertCircle size={16} />
                     <span>{error}</span>
                 </div>
@@ -150,7 +150,7 @@ export default function ImageUpload({ onImagesChange, maxImages = 5, existingIma
                             />
                             {/* Primary badge */}
                             {index === 0 && (
-                                <span className="absolute bottom-1 left-1 bg-[#d4a017] text-black text-[10px] font-bold px-2 py-0.5 rounded">
+                                <span className="absolute bottom-1 left-1 bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded">
                                     Primary
                                 </span>
                             )}
@@ -158,7 +158,7 @@ export default function ImageUpload({ onImagesChange, maxImages = 5, existingIma
                             <button
                                 type="button"
                                 onClick={() => removeImage(index)}
-                                className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                                className="absolute top-1 right-1 bg-black text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg hover:scale-110"
                                 title="Remove image"
                             >
                                 <X size={12} />

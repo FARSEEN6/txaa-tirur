@@ -12,6 +12,9 @@ import BrandStorySection from "@/components/home/BrandStorySection";
 import CategoryNav from "@/components/home/CategoryNav";
 import { useHighlights, useCategories, useBrandStory } from "@/hooks/useHomeContent";
 import CarBrandsSlider from "@/components/shared/CarBrandsSlider";
+import LamborghiniStyleSection from "@/components/home/LamborghiniStyleSection";
+
+import SEO from "@/components/common/SEO";
 
 export default function Home() {
     const [products, setProducts] = useState<any[]>([]);
@@ -85,6 +88,10 @@ export default function Home() {
 
     return (
         <div className="flex flex-col min-h-screen bg-white text-black">
+            <SEO
+                title="Premium Car Accessories & Modifications"
+                description="Upgrade your ride with TXAA's premium range of seat covers, lighting, audio systems, and custom modifications in Tirur."
+            />
             {/* Hero Carousel - New Promotional Style */}
             <PromotionalCarousel />
 
@@ -119,63 +126,7 @@ export default function Home() {
             )}
 
             {/* Shop By Category - Modern Glassmorphism */}
-            <section className="relative py-24 overflow-hidden bg-slate-50">
-                {/* Background Gradients/Blobs */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                    <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-200/40 rounded-full blur-[120px] mix-blend-multiply filter opacity-70 animate-blob"></div>
-                    <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-200/40 rounded-full blur-[120px] mix-blend-multiply filter opacity-70 animate-blob animation-delay-2000"></div>
-                    <div className="absolute -bottom-32 left-[20%] w-[50%] h-[50%] bg-pink-200/40 rounded-full blur-[120px] mix-blend-multiply filter opacity-70 animate-blob animation-delay-4000"></div>
-                </div>
-
-                <div className="container relative mx-auto px-6 z-10">
-                    <div className="text-center mb-16">
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/50 backdrop-blur-sm border border-white/60 text-xs font-bold uppercase tracking-widest text-gray-500 mb-4 shadow-sm">
-                            <Sparkles size={12} className="text-amber-400" /> Collections
-                        </span>
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-4">Shop By Category</h2>
-                        <p className="text-gray-600 max-w-xl mx-auto text-lg">Premium upgrades designed to match your style.</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {/* Template for Glass Cards */}
-                        {[
-                            { title: "Number Plate Frames", icon: RectangleHorizontal, color: "text-orange-500", bg: "bg-orange-50", href: "/shop?category=Number Plate Frames" },
-                            { title: "Stickers & Decals", icon: Sticker, color: "text-pink-500", bg: "bg-pink-50", href: "/shop?category=Stickers" },
-                            { title: "Door Sill Plates", icon: Layers, color: "text-amber-500", bg: "bg-amber-50", href: "/shop?category=Door Sill Plates" },
-                            { title: "Seat Covers", icon: Armchair, color: "text-rose-500", bg: "bg-rose-50", href: "/shop?category=Seat Covers" },
-                            { title: "Floor Mats", icon: Grid3X3, color: "text-blue-500", bg: "bg-blue-50", href: "/shop?category=Floor Mats" },
-                            { title: "LED Lights", icon: Zap, color: "text-purple-500", bg: "bg-purple-50", href: "/shop?category=LED Lights" },
-                            { title: "Sun Shades", icon: Sun, color: "text-cyan-500", bg: "bg-cyan-50", href: "/shop?category=Sun Shades" },
-                            { title: "Gear Knobs", icon: Disc, color: "text-emerald-500", bg: "bg-emerald-50", href: "/shop?category=Gear Knobs" },
-                        ].map((item, idx) => (
-                            <Link key={idx} to={item.href} className="group relative">
-                                <div className="relative overflow-hidden rounded-3xl p-8 bg-white/30 backdrop-blur-md border border-white/60 shadow-lg shadow-gray-200/20 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl hover:bg-white/50 hover:border-white/80 h-full flex flex-col items-center justify-center text-center">
-
-                                    {/* Glossy Overlay/Reflection */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-                                    {/* Icon Container with Soft Glow */}
-                                    <div className={`relative w-20 h-20 rounded-2xl ${item.bg} flex items-center justify-center mb-6 transition-transform duration-500 group-hover:scale-110 shadow-inner ring-1 ring-white/50`}>
-                                        <item.icon size={36} className={`${item.color} drop-shadow-sm`} strokeWidth={1.5} />
-                                    </div>
-
-                                    {/* Text */}
-                                    <h3 className="text-lg font-bold text-gray-800 group-hover:text-black transition-colors">{item.title}</h3>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-2 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                        Explore
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-
-                    <div className="text-center mt-16">
-                        <Link to="/shop" className="group inline-flex items-center gap-3 px-8 py-4 bg-black text-white font-bold rounded-full hover:bg-gray-900 transition-all hover:scale-105 shadow-xl shadow-black/10">
-                            View Full Catalog <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    </div>
-                </div>
-            </section>
+            <LamborghiniStyleSection />
 
             {/* Featured Products - Minimal Grid */}
             <section className="py-24 bg-gray-50">

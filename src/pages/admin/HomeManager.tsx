@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuthStore } from "@/store/useAuthStore";
-import { Image as ImageIcon, Star, Grid3x3, BookOpen } from "lucide-react";
+import { Image as ImageIcon, Star, Grid3x3, BookOpen, Layers, Zap, Palette } from "lucide-react";
 import AdminLayout from "@/components/layout/AdminLayout";
 
 export default function HomeManagerOverview() {
@@ -50,6 +50,27 @@ export default function HomeManagerOverview() {
             description: "Update the brand story section with photo and text",
             icon: BookOpen,
             href: "/admin/home-manager/story",
+            color: "text-black",
+        },
+        {
+            title: "Category Tabs",
+            description: "Manage items in 'Shop by Category' tabs (Interior, Exterior, etc.)",
+            icon: Layers,
+            href: "/admin/home-manager/category-tabs",
+            color: "text-black",
+        },
+        {
+            title: "Style Section",
+            description: "Customize the Lamborghini-style feature section",
+            icon: Zap,
+            href: "/admin/home-manager/style-section",
+            color: "text-black",
+        },
+        {
+            title: "Navbar Logo",
+            description: "Customize logo type, color, and filters",
+            icon: Palette,
+            href: "/admin/home-manager/navbar-logo",
             color: "text-black",
         },
     ];

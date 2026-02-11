@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Maximize2 } from "lucide-react";
+import { useCategoryTabs } from "@/hooks/useHomeContent";
+import { CATEGORY_TABS } from "@/types/home";
+import ImageModal from "@/components/ui/ImageModal";
 
-// Category data structure with real car accessory images
-const categoryData = {
+// Category data structure with real car accessory images (Fallback)
+const staticCategoryData: Record<string, any[]> = {
     "INTERIOR": [
         { name: "Car Comfort", image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=800&fit=crop", link: "/shop?category=Car Comfort" },
         { name: "Steering Wheel Covers", image: "https://images.unsplash.com/photo-1449130623583-2346e4e4c5b0?w=600&h=800&fit=crop", link: "/shop?category=Steering Wheel Covers" },
@@ -53,25 +56,36 @@ const categoryData = {
     ],
 };
 
-const categories = Object.keys(categoryData);
+const categories = Object.keys(staticCategoryData);
 
 export default function CategoryNav() {
-    const [activeCategory, setActiveCategory] = useState(categories[0]);
+    const { items, getItemsByTab, loading } = useCategoryTabs();
+    // Use dynamic categories list to include newly added groups if any
+    const displayCategories = CATEGORY_TABS;
+    const [activeCategory, setActiveCategory] = useState<string>(displayCategories[0]);
+    const [selectedImage, setSelectedImage] = useState<{ url: string; alt: string } | null>(null);
+
+    const dynamicItems = getItemsByTab(activeCategory);
+    const hasDynamicForThisTab = dynamicItems.length > 0;
+
+    const currentItems = hasDynamicForThisTab && dynamicItems
+        ? dynamicItems
+        : staticCategoryData[activeCategory];
 
     return (
-        <section className="py-24 bg-white relative">
+        <section className="py-24 bg-white relative border-t border-gray-100">
             <div className="container mx-auto px-4">
 
                 {/* Floating Pill Tabs */}
                 <div className="flex justify-center mb-16 overflow-x-auto pb-4 no-scrollbar">
-                    <div className="bg-gray-100/50 p-1.5 rounded-full inline-flex gap-2 backdrop-blur-sm border border-gray-200">
-                        {categories.map((category) => (
+                    <div className="bg-gray-50 p-1.5 rounded-full inline-flex gap-2 border border-gray-200">
+                        {displayCategories.map((category) => (
                             <button
                                 key={category}
                                 onClick={() => setActiveCategory(category)}
                                 className={`relative px-6 py-2.5 rounded-full text-sm font-bold tracking-wide transition-all duration-300 z-10 ${activeCategory === category
-                                    ? "text-white shadow-md shadow-gray-900/10"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-white/50"
+                                    ? "text-white shadow-sm"
+                                    : "text-gray-500 hover:text-black hover:bg-gray-100"
                                     }`}
                             >
                                 {activeCategory === category && (
@@ -88,46 +102,79 @@ export default function CategoryNav() {
                 </div>
 
                 {/* Premium Portrait Grid */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeCategory}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.5, ease: "easeOut" }}
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
-                    >
-                        {categoryData[activeCategory as keyof typeof categoryData].map((item, idx) => (
-                            <Link
-                                key={idx}
-                                to={item.link}
-                                className="group relative block aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100"
-                            >
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
+                {/* Only verify loading if we have zero items globally, otherwise assume cached/static is fine */}
+                {loading && items.length === 0 ? (
+                    <div className="flex justify-center py-20">
+                        <div className="w-8 h-8 border-2 border-gray-100 border-t-black rounded-full animate-spin"></div>
+                    </div>
+                ) : (
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeCategory}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6"
+                        >
+                            {currentItems && currentItems.map((item: any, idx: number) => {
+                                const isLegacy = item.grayscale === undefined && item.brightness === undefined;
+                                const hasCustomColor = !!item.titleColor;
 
-                                {/* Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+                                const getFilterStyle = () => {
+                                    if (isLegacy) return undefined;
+                                    const filters = [];
+                                    if (item.grayscale) filters.push("grayscale(100%)");
+                                    if (item.brightness && item.brightness !== 100) filters.push(`brightness(${item.brightness}%)`);
+                                    if (item.contrast && item.contrast !== 100) filters.push(`contrast(${item.contrast}%)`);
+                                    return filters.length > 0 ? filters.join(" ") : "none";
+                                };
 
-                                {/* Content */}
-                                <div className="absolute inset-0 p-6 flex flex-col justify-end items-start text-left">
-                                    <span className="inline-block w-8 h-1 bg-white/50 rounded-full mb-3 origin-left group-hover:w-12 transition-all duration-300"></span>
-                                    <h3 className="text-white text-lg font-bold tracking-wide leading-tight group-hover:-translate-y-1 transition-transform duration-300">
-                                        {item.name}
-                                    </h3>
-                                    <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
-                                        <span className="text-xs font-bold text-white/90 uppercase tracking-widest">Shop Now</span>
-                                        <ChevronRight size={14} className="text-white" />
+                                return (
+                                    <div
+                                        key={idx}
+                                        onClick={() => setSelectedImage({ url: item.image, alt: item.name })}
+                                        className="group relative block aspect-[3/4] rounded-sm overflow-hidden bg-gray-100 cursor-zoom-in border border-gray-100"
+                                    >
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className={`absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 ${isLegacy ? "grayscale group-hover:grayscale-0" : ""}`}
+                                            style={{ filter: getFilterStyle() }}
+                                        />
+
+                                        {/* Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+
+                                        {/* Content */}
+                                        <div className="absolute inset-0 p-6 flex flex-col justify-end items-start text-left">
+                                            <span className={`inline-block w-8 h-0.5 mb-3 origin-left group-hover:w-12 transition-all duration-300 ${hasCustomColor ? "" : "bg-white"}`}
+                                                style={{ backgroundColor: hasCustomColor ? item.titleColor : undefined }}></span>
+                                            <h3 className={`text-lg font-bold tracking-wide leading-tight group-hover:-translate-y-1 transition-transform duration-300 ${hasCustomColor ? "" : "text-white"}`}
+                                                style={{ color: item.titleColor }}>
+                                                {item.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
+                                                <span className={`text-xs font-bold uppercase tracking-widest ${hasCustomColor ? "" : "text-white"}`}
+                                                    style={{ color: item.titleColor }}>View Image</span>
+                                                <Maximize2 size={14} className={`${hasCustomColor ? "" : "text-white"}`} style={{ color: item.titleColor }} />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </motion.div>
-                </AnimatePresence>
+                                );
+                            })}
+                        </motion.div>
+                    </AnimatePresence>
+                )}
             </div>
+
+            {/* Lightbox Modal */}
+            <ImageModal
+                isOpen={!!selectedImage}
+                onClose={() => setSelectedImage(null)}
+                imageUrl={selectedImage?.url || ""}
+                altText={selectedImage?.alt}
+            />
         </section>
     );
 }

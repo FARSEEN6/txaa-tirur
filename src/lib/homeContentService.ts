@@ -8,7 +8,13 @@ import type {
     Category,
     CategoryFormData,
     BrandStory,
-    BrandStoryFormData
+    BrandStoryFormData,
+    CategoryTabItem,
+    CategoryTabItemFormData,
+    LamborghiniStyleSection,
+    LamborghiniStyleSectionFormData,
+    LogoSettings,
+    LogoFormData
 } from '@/types/home';
 
 // ============================================
@@ -186,6 +192,91 @@ export const getBrandStory = async (): Promise<BrandStory | null> => {
 export const updateBrandStory = async (data: BrandStoryFormData): Promise<void> => {
     const storyRef = ref(rtdb, 'homeContent/brandStory');
     await set(storyRef, {
+        ...data,
+        updatedAt: Date.now()
+    });
+};
+
+// ============================================
+// LAMBORGHINI STYLE SECTION
+// ============================================
+
+export const getLamborghiniStyleSection = async (): Promise<LamborghiniStyleSection | null> => {
+    const sectionRef = ref(rtdb, 'homeContent/lamborghiniSection');
+    const snapshot = await get(sectionRef);
+
+    if (!snapshot.exists()) return null;
+
+    return snapshot.val();
+};
+
+export const updateLamborghiniStyleSection = async (data: LamborghiniStyleSectionFormData): Promise<void> => {
+    const sectionRef = ref(rtdb, 'homeContent/lamborghiniSection');
+    await set(sectionRef, {
+        ...data,
+        updatedAt: Date.now()
+    });
+};
+
+// ============================================
+// CATEGORY TABS (INTERIOR/EXTERIOR/etc.)
+// ============================================
+
+export const addCategoryTabItem = async (data: CategoryTabItemFormData): Promise<string> => {
+    const itemsRef = ref(rtdb, 'homeContent/categoryTabs');
+    const newItemRef = push(itemsRef);
+
+    const itemData: Omit<CategoryTabItem, 'id'> = {
+        ...data,
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+    };
+
+    await set(newItemRef, itemData);
+    return newItemRef.key!;
+};
+
+export const updateCategoryTabItem = async (id: string, data: Partial<CategoryTabItemFormData>): Promise<void> => {
+    const itemRef = ref(rtdb, `homeContent/categoryTabs/${id}`);
+    await update(itemRef, {
+        ...data,
+        updatedAt: Date.now()
+    });
+};
+
+export const deleteCategoryTabItem = async (id: string): Promise<void> => {
+    const itemRef = ref(rtdb, `homeContent/categoryTabs/${id}`);
+    await remove(itemRef);
+};
+
+export const getCategoryTabItems = async (): Promise<CategoryTabItem[]> => {
+    const itemsRef = ref(rtdb, 'homeContent/categoryTabs');
+    const snapshot = await get(itemsRef);
+    if (!snapshot.exists()) return [];
+
+    const data = snapshot.val();
+    return Object.entries(data).map(([id, item]: [string, any]) => ({
+        id,
+        ...item
+    })).sort((a, b) => b.createdAt - a.createdAt);
+};
+
+// ============================================
+// LOGO SETTINGS
+// ============================================
+
+export const getLogoSettings = async (): Promise<LogoSettings | null> => {
+    const settingsRef = ref(rtdb, 'layout/logoSettings');
+    const snapshot = await get(settingsRef);
+
+    if (!snapshot.exists()) return null;
+
+    return snapshot.val();
+};
+
+export const updateLogoSettings = async (data: LogoFormData): Promise<void> => {
+    const settingsRef = ref(rtdb, 'layout/logoSettings');
+    await set(settingsRef, {
         ...data,
         updatedAt: Date.now()
     });

@@ -25,6 +25,10 @@ export default function CategoriesManagerPage() {
         imageUrl: "",
         enabled: true,
         order: 0,
+        titleColor: "#000000",
+        grayscale: false,
+        brightness: 100,
+        contrast: 100,
     });
     const [uploading, setUploading] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -43,6 +47,10 @@ export default function CategoriesManagerPage() {
                 imageUrl: editingCategory.imageUrl,
                 enabled: editingCategory.enabled,
                 order: editingCategory.order,
+                titleColor: editingCategory.titleColor || "#000000",
+                grayscale: editingCategory.grayscale || false,
+                brightness: editingCategory.brightness || 100,
+                contrast: editingCategory.contrast || 100,
             });
             setImagePreview(editingCategory.imageUrl);
         }
@@ -119,6 +127,10 @@ export default function CategoriesManagerPage() {
             imageUrl: "",
             enabled: true,
             order: 0,
+            titleColor: "#000000",
+            grayscale: false,
+            brightness: 100,
+            contrast: 100,
         });
         setImageFile(null);
         setImagePreview("");
@@ -239,11 +251,77 @@ export default function CategoriesManagerPage() {
                                         id="enabled"
                                         checked={formData.enabled}
                                         onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
-                                        className="w-5 h-5"
+                                        className="w-5 h-5 accent-black"
                                     />
                                     <label htmlFor="enabled" className="text-sm font-bold uppercase tracking-wider">
                                         Show Category
                                     </label>
+                                </div>
+
+                                {/* STYLING CONTROLS */}
+                                <div>
+                                    <h4 className="font-bold text-xs text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Styling</h4>
+
+                                    {/* Text Color */}
+                                    <div className="mb-6">
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-900 mb-2">Text Color</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="color"
+                                                value={formData.titleColor || "#000000"}
+                                                onChange={(e) => setFormData({ ...formData, titleColor: e.target.value })}
+                                                className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={formData.titleColor || "#000000"}
+                                                onChange={(e) => setFormData({ ...formData, titleColor: e.target.value })}
+                                                className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-xs font-mono"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Image Filters */}
+                                    <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                        <label className="flex items-center gap-3 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!formData.grayscale}
+                                                onChange={(e) => setFormData({ ...formData, grayscale: e.target.checked })}
+                                                className="w-4 h-4 accent-black"
+                                            />
+                                            <span className="text-xs font-bold uppercase tracking-wider text-gray-700">Black & White Mode</span>
+                                        </label>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                                    Brightness ({formData.brightness || 100}%)
+                                                </label>
+                                                <input
+                                                    type="range"
+                                                    min="50"
+                                                    max="150"
+                                                    value={formData.brightness || 100}
+                                                    onChange={(e) => setFormData({ ...formData, brightness: parseInt(e.target.value) })}
+                                                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                                    Contrast ({formData.contrast || 100}%)
+                                                </label>
+                                                <input
+                                                    type="range"
+                                                    min="50"
+                                                    max="150"
+                                                    value={formData.contrast || 100}
+                                                    onChange={(e) => setFormData({ ...formData, contrast: parseInt(e.target.value) })}
+                                                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* Actions */}
@@ -267,79 +345,84 @@ export default function CategoriesManagerPage() {
                             </form>
                         </div>
                     </div>
-                )}
+                )
+                }
 
                 {/* Categories List */}
-                {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 text-red-600 text-sm">
-                        {error}
-                    </div>
-                )}
+                {
+                    error && (
+                        <div className="p-4 bg-red-50 border border-red-200 text-red-600 text-sm">
+                            {error}
+                        </div>
+                    )
+                }
 
-                {categories.length === 0 ? (
-                    <div className="text-center py-20 border border-dashed border-gray-200">
-                        <p className="text-gray-400 mb-4">No categories yet</p>
-                        <button
-                            onClick={() => setIsFormOpen(true)}
-                            className="text-sm font-bold uppercase tracking-wider text-black underline"
-                        >
-                            Add your first category
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {categories.map((category) => (
-                            <div
-                                key={category.id}
-                                className={`border ${category.enabled ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-60"
-                                    }`}
+                {
+                    categories.length === 0 ? (
+                        <div className="text-center py-20 border border-dashed border-gray-200">
+                            <p className="text-gray-400 mb-4">No categories yet</p>
+                            <button
+                                onClick={() => setIsFormOpen(true)}
+                                className="text-sm font-bold uppercase tracking-wider text-black underline"
                             >
-                                {/* Image */}
-                                <div className="relative aspect-square w-full">
-                                    <img
-                                        src={category.imageUrl}
-                                        alt={category.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
+                                Add your first category
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {categories.map((category) => (
+                                <div
+                                    key={category.id}
+                                    className={`border ${category.enabled ? "border-gray-200 bg-white" : "border-gray-100 bg-gray-50 opacity-60"
+                                        }`}
+                                >
+                                    {/* Image */}
+                                    <div className="relative aspect-square w-full">
+                                        <img
+                                            src={category.imageUrl}
+                                            alt={category.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
 
-                                {/* Content */}
-                                <div className="p-6">
-                                    <h3 className="font-bold text-lg mb-4">{category.name}</h3>
+                                    {/* Content */}
+                                    <div className="p-6">
+                                        <h3 className="font-bold text-lg mb-4">{category.name}</h3>
 
-                                    {/* Actions */}
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => toggleEnabled(category)}
-                                            className="p-2 hover:bg-gray-100 transition-colors"
-                                            title={category.enabled ? "Hide" : "Show"}
-                                        >
-                                            {category.enabled ? <Eye size={18} /> : <EyeOff size={18} />}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setEditingCategory(category);
-                                                setIsFormOpen(true);
-                                            }}
-                                            className="p-2 hover:bg-gray-100 transition-colors"
-                                            title="Edit"
-                                        >
-                                            <Edit2 size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(category.id)}
-                                            className="p-2 hover:bg-red-50 text-red-600 transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
+                                        {/* Actions */}
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => toggleEnabled(category)}
+                                                className="p-2 hover:bg-gray-100 transition-colors"
+                                                title={category.enabled ? "Hide" : "Show"}
+                                            >
+                                                {category.enabled ? <Eye size={18} /> : <EyeOff size={18} />}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setEditingCategory(category);
+                                                    setIsFormOpen(true);
+                                                }}
+                                                className="p-2 hover:bg-gray-100 transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Edit2 size={18} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(category.id)}
+                                                className="p-2 hover:bg-red-50 text-red-600 transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </AdminLayout>
+                            ))}
+                        </div>
+                    )
+                }
+            </div >
+        </AdminLayout >
     );
 }

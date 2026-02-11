@@ -2,20 +2,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
-/* ============= FOMS PREMIUM WHITE & BLACK THEME ============= */
+/* ============= FOMS MONOCHROME THEME ============= */
 @theme {
   --font-sans: 'Inter', sans-serif;
   --font-heading: 'Poppins', sans-serif;
 
-  /* Brand Colors - Monochrome */
+  /* Brand Colors - STRICT MONOCHROME */
   --color-black: #000000;
   --color-white: #ffffff;
-  --color-gray-light: #f4f4f5;
-  --color-gray-medium: #e4e4e7;
-  --color-gray-dark: #27272a;
+  
+  /* Grays */
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f4f4f5;
+  --color-gray-200: #e4e4e7;
+  --color-gray-300: #d4d4d8;
+  --color-gray-400: #a1a1aa;
+  --color-gray-500: #71717a;
+  --color-gray-600: #52525b;
+  --color-gray-700: #3f3f46;
+  --color-gray-800: #27272a;
+  --color-gray-900: #18181b;
 
-  /* Functional Colors */
-  --color-error: #dc2626;
+  /* Functional Colors - Mapped to Monochrome */
+  --color-primary: #000000;
+  --color-secondary: #ffffff;
+  --color-accent: #000000;
+  --color-error: #000000; /* No red allowed */
+  --color-success: #000000; /* No green allowed */
+  --color-warning: #000000; /* No orange allowed */
 
   /* Backgrounds */
   --color-background: #ffffff;
@@ -26,6 +40,7 @@
   --color-text-primary: #000000;
   --color-text-secondary: #52525b;
   --color-text-muted: #a1a1aa;
+  --color-text-inverse: #ffffff;
 
   /* Borders */
   --color-border: #e4e4e7;
@@ -44,8 +59,8 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
+  background-color: var(--color-white);
+  color: var(--color-black);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -53,10 +68,10 @@ body {
 h1,h2,h3,h4,h5,h6 {
   font-family: var(--font-heading);
   letter-spacing: -0.03em;
-  color: var(--color-text-primary);
+  color: var(--color-black);
 }
 
-/* ============= PREMIUM BUTTONS ============= */
+/* ============= MONOCHROME UTILITIES ============= */
 .btn-primary {
   background-color: var(--color-black);
   color: var(--color-white);
@@ -69,12 +84,12 @@ h1,h2,h3,h4,h5,h6 {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  border-radius: 0;
   border: 1px solid var(--color-black);
+  border-radius: 0;
 }
 
 .btn-primary:hover {
-  background-color: transparent;
+  background-color: var(--color-white);
   color: var(--color-black);
 }
 
@@ -99,13 +114,26 @@ h1,h2,h3,h4,h5,h6 {
   color: var(--color-white);
 }
 
+.btn-icon {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border: 1px solid var(--color-gray-200);
+  transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+  background-color: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
 .text-balance {
   text-wrap: balance;
 }
 
 input, select, textarea {
   background-color: var(--color-white);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-gray-200);
   color: var(--color-black);
   padding: 0.75rem 1rem;
   border-radius: 0;
@@ -140,21 +168,4 @@ input:focus, select:focus, textarea:focus {
   to { opacity: 1; }
 }
 
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
-}
-
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
+/* Removed colored blob animations */

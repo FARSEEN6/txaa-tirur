@@ -2,7 +2,7 @@
 import { useState } from "react";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, ShoppingBag, Users, Menu, X, Settings, Shield, Image as ImageIcon } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, Menu, X, Settings, Shield, Image as ImageIcon, Car } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -16,9 +16,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const navItems = [
         { name: "Overview", href: "/admin", icon: LayoutDashboard, adminOnly: false },
         { name: "Products", href: "/admin/products", icon: Package, adminOnly: false },
+        { name: "Car Models", href: "/admin/models", icon: Car, adminOnly: false },
         { name: "Orders", href: "/admin/orders", icon: ShoppingBag, adminOnly: false },
         { name: "Users", href: "/admin/users", icon: Users, adminOnly: false },
         { name: "Home Manager", href: "/admin/home-manager", icon: ImageIcon, adminOnly: false },
+        { name: "Photos", href: "/admin/photos", icon: ImageIcon, adminOnly: false },
         // Super Admin only items
         { name: "Manage Admins", href: "/admin/manage-admins", icon: Shield, adminOnly: true },
         { name: "Settings", href: "/admin/settings", icon: Settings, adminOnly: true },
